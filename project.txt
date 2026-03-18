@@ -1,0 +1,1337 @@
+═══════════════════════════════════════════════════════════════════════════════
+AI FLOOR PLAN GENERATOR — TAMIL NADU
+COMPLETE PROJECT STRUCTURE & FRONTEND ORGANIZATION
+═══════════════════════════════════════════════════════════════════════════════
+
+PROJECT OVERVIEW
+────────────────────────────────────────────────────────────────────────────────
+An Explainable AI Framework for Climate-Responsive Building Design and 
+Sustainable Material Selection in Tamil Nadu, inspired by Laurie Baker Principles.
+
+Tech Stack:
+- Backend: Python 3.10+
+- Frontend: Streamlit (Web UI)
+- Visualization: Matplotlib
+- Data: Pandas, NumPy
+
+═══════════════════════════════════════════════════════════════════════════════
+CURRENT PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+floorplan_tn/
+│
+├── 📱 FRONTEND (Streamlit UI)
+│   ├── app.py                          # Main Streamlit application
+│   │                                   # - User input forms (sidebar)
+│   │                                   # - Tab-based layout (Floor Plan, Report)
+│   │                                   # - Agent pipeline integration
+│   │                                   # - Session state management
+│   │                                   # - Download functionality
+│   │
+│   └── renderer.py                     # Visualization engine
+│                                       # - Wall-centric architectural drawing
+│                                       # - Door/window rendering
+│                                       # - Room labels & dimensions
+│                                       # - Compass, scale bar, grid
+│                                       # - Fixture placement (bathroom, kitchen)
+│
+├── 🧠 BACKEND (Core Logic)
+│   ├── engine.py                       # Floor plan generation engine
+│   │                                   # - BHK layout templates
+│   │                                   # - Room placement algorithms
+│   │                                   # - Climate zone logic
+│   │                                   # - Orientation system
+│   │                                   # - Scoring system (6 metrics)
+│   │                                   # - Agent integration
+│   │
+│   └── tn_plot_standards.py            # Tamil Nadu plot standards
+│                                       # - Standard plot sizes
+│                                       # - Plot validation
+│                                       # - BHK suitability checks
+│
+├── 🤖 AI AGENTS (Expert Systems)
+│   ├── agents/
+│   │   ├── orchestrator.py             # Agent pipeline coordinator
+│   │   ├── base_agent.py               # Base agent class
+│   │   ├── arch_agent.py               # Architectural design agent
+│   │   ├── baker_agent.py              # Laurie Baker principles agent
+│   │   ├── climate_agent.py            # Climate-responsive design agent
+│   │   ├── material_agent.py           # Material selection agent
+│   │   ├── regulatory_agent.py         # Building code compliance agent
+│   │   └── vastu_agent.py              # Vastu Shastra agent
+│
+├── 🧮 ALGORITHMS
+│   ├── algorithms/
+│   │   ├── adjacency_solver.py         # Graph-based room adjacency solver
+│   │   └── scoring.py                  # Multi-objective scoring system
+│
+├── 📊 DATA MODULES (Research-backed)
+│   ├── data/
+│   │   ├── nbc_standards.py            # NBC 2016 building code standards
+│   │   ├── tn_setbacks.py              # TNCDBR 2019 setback regulations
+│   │   ├── tn_climate_data.py          # IMD climate data (1981-2010)
+│   │   ├── vastu_data.py               # Vastu Shastra principles
+│   │   └── materials_db.py             # Local materials database
+│
+├── 📄 DOCUMENTATION
+│   ├── README.md                       # Project overview & quick start
+│   ├── prompt.txt                      # Project requirements
+│   └── ER_Diagram.png                  # Entity-relationship diagram
+│
+├── 🧪 TESTS & OUTPUTS
+│   ├── test_engine.py                  # Engine unit tests
+│   ├── test_render.py                  # Renderer tests
+│   ├── test_doors.py                   # Door placement tests
+│   └── test_*.png                      # Generated floor plan samples
+│
+├── 🚀 DEPLOYMENT
+│   ├── requirements.txt                # Python dependencies
+│   ├── launch.sh                       # Linux/Mac launcher
+│   └── launch.bat                      # Windows launcher
+│
+└── ⚙️ CONFIGURATION
+    ├── .vscode/                        # VS Code settings
+    ├── .claude/                        # Claude AI settings
+    ├── .zencoder/                      # Zencoder workflows
+    └── .zenflow/                       # Zenflow workflows
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND ARCHITECTURE (Streamlit)
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT FRONTEND STRUCTURE
+────────────────────────────────────────────────────────────────────────────────
+
+app.py (Main Application)
+│
+├── 🎨 UI LAYOUT
+│   ├── Sidebar (Input Controls)
+│   │   ├── Plot Parameters
+│   │   │   ├── Width & Depth inputs
+│   │   │   ├── TN standard plot snapping
+│   │   │   ├── District/City selection
+│   │   │   └── Road width selection
+│   │   │
+│   │   ├── Building Configuration
+│   │   │   ├── BHK type selector
+│   │   │   └── Budget tier selector
+│   │   │
+│   │   ├── Climate & Orientation
+│   │   │   ├── Climate zone selector
+│   │   │   ├── Facing direction selector
+│   │   │   └── Live Vastu score display
+│   │   │
+│   │   ├── Kitchen & Site
+│   │   │   ├── Cooking style selector
+│   │   │   └── Special site conditions
+│   │   │
+│   │   ├── Display Options
+│   │   │   ├── Show grid checkbox
+│   │   │   └── Show compass checkbox
+│   │   │
+│   │   └── Generate Button
+│   │       └── Triggers agent pipeline + floor plan generation
+│   │
+│   └── Main Content Area (Tabs)
+│       ├── Tab 1: Floor Plan
+│       │   ├── Rendered floor plan (Matplotlib figure)
+│       │   └── Download button (PNG export)
+│       │
+│       └── Tab 2: Report
+│           ├── Section 1: Design Summary
+│           │   ├── Overall score badge
+│           │   ├── Individual metric scores
+│           │   └── Agent integration indicator
+│           │
+│           ├── Section 2: Site & Regulatory
+│           │   ├── TNCDBR setbacks table
+│           │   ├── FSI/FAR limits
+│           │   ├── Ground coverage
+│           │   └── Approval pathway
+│           │
+│           ├── Section 3: Room Schedule
+│           │   ├── Room details table
+│           │   ├── NBC compliance status
+│           │   └── Adjacency violations
+│           │
+│           ├── Section 4: Climate & Passive Design
+│           │   ├── Climate zone info
+│           │   ├── ECBC compliance
+│           │   ├── Passive strategies
+│           │   └── Window placement rules
+│           │
+│           ├── Section 5: Baker Principles & Materials
+│           │   ├── Applied Baker principles
+│           │   ├── Recommended materials table
+│           │   └── Cost savings estimate
+│           │
+│           ├── Section 6: Vastu Analysis
+│           │   ├── Facing direction score
+│           │   ├── Room placement compliance
+│           │   └── Overall Vastu rating
+│           │
+│           ├── Section 7: AI Reasoning (XAI)
+│           │   └── Explainable AI decision trace
+│           │
+│           └── Section 8: Agent Recommendations
+│               ├── Baker agent insights
+│               ├── Climate agent insights
+│               ├── Material agent insights
+│               ├── Regulatory agent insights
+│               ├── Vastu agent insights
+│               └── Arch agent insights
+│
+├── 🎨 STYLING (Custom CSS)
+│   ├── .main-title          # Page header styling
+│   ├── .subtitle            # Subtitle with data sources
+│   ├── .score-card          # Metric score cards
+│   ├── .baker-box           # Baker principle highlights
+│   ├── .xai-box             # XAI explanation boxes
+│   ├── .nbc-box             # NBC compliance boxes
+│   ├── .vastu-box           # Vastu analysis boxes
+│   ├── .setback-box         # Setback regulation boxes
+│   ├── .mat-box             # Material recommendation boxes
+│   ├── .ref-box             # Reference citation boxes
+│   ├── .variant-card        # Layout variant cards
+│   └── .badge               # Status badges
+│
+└── 🔄 STATE MANAGEMENT
+    ├── st.session_state["fp"]           # Current floor plan object
+    ├── st.session_state["all3"]         # All 3 generated variants
+    └── st.session_state["agent_report"] # Agent analysis results
+
+
+renderer.py (Visualization Engine) — ENHANCED v4
+│
+├── 🎨 RENDERING PIPELINE
+│   ├── render_floorplan()               # Main rendering function
+│   │   ├── Grid overlay
+│   │   ├── Plot boundary
+│   │   ├── Floor fill
+│   │   ├── Verandah pattern
+│   │   ├── Courtyard rendering
+│   │   ├── Furniture/fixtures
+│   │   ├── Wall segments
+│   │   ├── Openings (doors/windows/archways)
+│   │   ├── Columns
+│   │   ├── Room labels
+│   │   ├── Dimensions
+│   │   ├── Compass rose
+│   │   ├── Scale bar
+│   │   ├── Legend
+│   │   ├── Title block
+│   │   └── Section cut line
+│   │
+│   ├── Wall System
+│   │   ├── _compute_wall_segments()     # Wall geometry calculation
+│   │   ├── _merge_intervals()           # T-junction handling
+│   │   ├── _assign_openings()           # Door/window placement
+│   │   ├── _assign_archways()           # NEW: Archway detection & placement
+│   │   └── _draw_wall_segments()        # Wall rendering
+│   │
+│   ├── Opening System
+│   │   ├── _draw_window_opening()       # 3-line window symbol
+│   │   ├── _draw_door_opening()         # Architectural door swing
+│   │   └── _draw_archway_opening()      # NEW: Archway rendering (open passage)
+│   │
+│   ├── Fixture System
+│   │   ├── _fix_bathroom()              # WC, basin, shower
+│   │   ├── _fix_kitchen()               # L-counter, sink, hob (door-aware placement)
+│   │   ├── _fix_living()                # Sofa, coffee table
+│   │   ├── _fix_bedroom()               # Bed, wardrobe
+│   │   └── _fix_study()                 # Desk, chair
+│   │
+│   └── Annotation System
+│       ├── _room_label()                # Room name + area
+│       ├── _draw_dimensions()           # Dimension strings
+│       ├── _compass()                   # North arrow
+│       ├── _scale_bar()                 # Graphic scale
+│       ├── _legend()                    # Symbol legend
+│       ├── _legend_margin()             # Legend with margin info
+│       └── _title()                     # Title block
+
+
+═══════════════════════════════════════════════════════════════════════════════
+RECOMMENDED FRONTEND ORGANIZATION (Future Enhancement)
+═══════════════════════════════════════════════════════════════════════════════
+
+For scaling the application, consider this modular frontend structure:
+
+floorplan_tn/
+│
+├── frontend/                            # Frontend module (NEW)
+│   │
+│   ├── app.py                           # Main entry point (existing)
+│   │
+│   ├── pages/                           # Multi-page app structure
+│   │   ├── 1_🏠_Floor_Plan.py          # Floor plan generation page
+│   │   ├── 2_📊_Analytics.py           # Design analytics dashboard
+│   │   ├── 3_📚_Library.py             # Saved designs library
+│   │   ├── 4_⚙️_Settings.py            # User preferences
+│   │   └── 5_ℹ️_About.py               # Documentation & help
+│   │
+│   ├── components/                      # Reusable UI components
+│   │   ├── __init__.py
+│   │   ├── sidebar.py                   # Sidebar input controls
+│   │   ├── floor_plan_viewer.py         # Floor plan display component
+│   │   ├── report_sections.py           # Report section components
+│   │   ├── score_cards.py               # Metric score displays
+│   │   ├── data_tables.py               # Reusable data tables
+│   │   └── charts.py                    # Chart components
+│   │
+│   ├── layouts/                         # Layout templates
+│   │   ├── __init__.py
+│   │   ├── two_column.py                # Two-column layout
+│   │   ├── tabbed.py                    # Tabbed layout
+│   │   └── dashboard.py                 # Dashboard grid layout
+│   │
+│   ├── styles/                          # Styling & theming
+│   │   ├── __init__.py
+│   │   ├── custom_css.py                # Custom CSS definitions
+│   │   ├── colors.py                    # Color palette
+│   │   └── themes.py                    # Theme configurations
+│   │
+│   ├── utils/                           # Frontend utilities
+│   │   ├── __init__.py
+│   │   ├── session_state.py             # Session state management
+│   │   ├── formatters.py                # Data formatting utilities
+│   │   ├── validators.py                # Input validation
+│   │   └── export.py                    # Export functionality (PDF, PNG, DXF)
+│   │
+│   └── config/                          # Frontend configuration
+│       ├── __init__.py
+│       ├── ui_config.py                 # UI configuration
+│       └── constants.py                 # Frontend constants
+│
+├── backend/                             # Backend module (reorganized)
+│   ├── engine.py                        # Core engine (existing)
+│   ├── renderer.py                      # Visualization (existing)
+│   ├── tn_plot_standards.py             # Plot standards (existing)
+│   │
+│   ├── agents/                          # AI agents (existing)
+│   ├── algorithms/                      # Algorithms (existing)
+│   ├── data/                            # Data modules (existing)
+│   │
+│   └── api/                             # API layer (NEW)
+│       ├── __init__.py
+│       ├── floor_plan_api.py            # Floor plan generation API
+│       ├── agent_api.py                 # Agent pipeline API
+│       └── export_api.py                # Export API
+│
+├── shared/                              # Shared utilities (NEW)
+│   ├── __init__.py
+│   ├── models.py                        # Data models (FloorPlan, Room, etc.)
+│   ├── constants.py                     # Shared constants
+│   └── utils.py                         # Shared utility functions
+│
+└── tests/                               # Test suite (reorganized)
+    ├── frontend/                        # Frontend tests
+    │   ├── test_components.py
+    │   └── test_layouts.py
+    │
+    ├── backend/                         # Backend tests
+    │   ├── test_engine.py               # (existing)
+    │   ├── test_render.py               # (existing)
+    │   └── test_agents.py
+    │
+    └── integration/                     # Integration tests
+        └── test_end_to_end.py
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND COMPONENT BREAKDOWN
+═══════════════════════════════════════════════════════════════════════════════
+
+1. SIDEBAR COMPONENT (components/sidebar.py)
+────────────────────────────────────────────────────────────────────────────────
+Purpose: Centralize all input controls
+Functions:
+  - render_plot_inputs()          # Plot dimensions, district, road width
+  - render_building_inputs()      # BHK, budget tier
+  - render_climate_inputs()       # Climate zone, facing, Vastu score
+  - render_kitchen_inputs()       # Cooking style, site conditions
+  - render_display_options()      # Grid, compass toggles
+  - render_generate_button()      # Main action button
+
+Benefits:
+  - Reusable across pages
+  - Easier to maintain
+  - Consistent validation
+  - Testable in isolation
+
+
+2. FLOOR PLAN VIEWER (components/floor_plan_viewer.py)
+────────────────────────────────────────────────────────────────────────────────
+Purpose: Display and interact with floor plans
+Functions:
+  - render_floor_plan(fp, options)     # Main display
+  - render_variant_selector(all3)      # Compare 3 variants
+  - render_zoom_controls()             # Zoom in/out
+  - render_layer_toggles()             # Show/hide layers
+  - render_download_options()          # Export formats
+
+Features:
+  - Interactive zoom/pan
+  - Layer visibility control
+  - Multiple export formats (PNG, PDF, DXF)
+  - Comparison view
+
+
+3. REPORT SECTIONS (components/report_sections.py)
+────────────────────────────────────────────────────────────────────────────────
+Purpose: Modular report generation
+Functions:
+  - render_design_summary(fp)          # Section 1
+  - render_site_regulatory(fp)         # Section 2
+  - render_room_schedule(fp)           # Section 3
+  - render_climate_passive(fp)         # Section 4
+  - render_baker_materials(fp)         # Section 5
+  - render_vastu_analysis(fp)          # Section 6
+  - render_ai_reasoning(fp)            # Section 7
+  - render_agent_recommendations(fp)   # Section 8
+
+Benefits:
+  - Each section is independent
+  - Easy to add/remove sections
+  - Consistent formatting
+  - Reusable across pages
+
+
+4. SCORE CARDS (components/score_cards.py)
+────────────────────────────────────────────────────────────────────────────────
+Purpose: Display metrics and scores
+Functions:
+  - render_overall_score(score)        # Large score badge
+  - render_metric_grid(scores)         # 7-metric grid
+  - render_comparison_scores(fp1, fp2) # Compare designs
+  - render_score_trend(history)        # Score over time
+
+Features:
+  - Color-coded by performance
+  - Tooltips with explanations
+  - Trend visualization
+  - Comparison mode
+
+
+5. DATA TABLES (components/data_tables.py)
+────────────────────────────────────────────────────────────────────────────────
+Purpose: Consistent table formatting
+Functions:
+  - render_room_schedule_table(rooms)
+  - render_materials_table(materials)
+  - render_setbacks_table(setbacks)
+  - render_compliance_table(checks)
+
+Features:
+  - Sortable columns
+  - Filterable rows
+  - Export to CSV/Excel
+  - Conditional formatting
+
+
+6. CHARTS (components/charts.py)
+────────────────────────────────────────────────────────────────────────────────
+Purpose: Data visualization
+Functions:
+  - render_score_radar(scores)         # Radar chart for 6 metrics
+  - render_area_breakdown(rooms)       # Pie chart of room areas
+  - render_climate_chart(zone)         # Climate data visualization
+  - render_cost_comparison(materials)  # Cost bar chart
+
+Libraries:
+  - Plotly (interactive charts)
+  - Altair (declarative charts)
+  - Matplotlib (static charts)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND FEATURES & ENHANCEMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT FEATURES (Implemented)
+────────────────────────────────────────────────────────────────────────────────
+✅ Single-page Streamlit app
+✅ Sidebar input controls
+✅ Real-time TN plot snapping
+✅ Live Vastu score display
+✅ Agent pipeline integration
+✅ 2-tab layout (Floor Plan + Report)
+✅ Matplotlib floor plan rendering
+✅ 8-section detailed report
+✅ PNG export
+✅ Session state management
+✅ Custom CSS styling
+✅ Responsive layout
+
+
+RECOMMENDED ENHANCEMENTS (Future)
+────────────────────────────────────────────────────────────────────────────────
+
+🎯 PHASE 1: User Experience
+────────────────────────────────────────────────────────────────────────────────
+1. Multi-page Navigation
+   - Separate pages for different workflows
+   - Persistent navigation sidebar
+   - Breadcrumb navigation
+
+2. Design Library
+   - Save generated designs
+   - Load previous designs
+   - Compare multiple designs
+   - Design history tracking
+
+3. Interactive Floor Plan
+   - Zoom/pan controls
+   - Click rooms for details
+   - Toggle layers (walls, furniture, dimensions)
+   - Measure tool
+
+4. Export Options
+   - PDF report generation
+   - DXF/DWG export (AutoCAD)
+   - SVG export (vector graphics)
+   - Excel data export
+
+5. Input Validation
+   - Real-time validation feedback
+   - Helpful error messages
+   - Input suggestions
+   - Auto-correction
+
+
+🎯 PHASE 2: Advanced Features
+────────────────────────────────────────────────────────────────────────────────
+1. 3D Visualization
+   - 3D floor plan view
+   - Walkthrough animation
+   - VR/AR support
+   - Sun path simulation
+
+2. Cost Estimation
+   - Material cost breakdown
+   - Labor cost estimation
+   - Total project cost
+   - Cost comparison charts
+
+3. Customization
+   - Manual room editing
+   - Drag-and-drop furniture
+   - Custom room dimensions
+   - Material substitution
+
+4. Collaboration
+   - Share designs via link
+   - Comments & annotations
+   - Version control
+   - Team workspaces
+
+5. AI Chat Assistant
+   - Natural language queries
+   - Design suggestions
+   - Code compliance Q&A
+   - Material recommendations
+
+
+🎯 PHASE 3: Professional Features
+────────────────────────────────────────────────────────────────────────────────
+1. BIM Integration
+   - Revit export
+   - IFC format support
+   - Quantity takeoff
+   - Clash detection
+
+2. Regulatory Compliance
+   - Automated code checking
+   - Approval document generation
+   - Compliance reports
+   - Regulatory updates
+
+3. Energy Simulation
+   - Annual energy consumption
+   - ECBC compliance scoring
+   - HVAC load calculation
+   - Solar potential analysis
+
+4. Project Management
+   - Timeline generation
+   - Resource allocation
+   - Progress tracking
+   - Budget management
+
+5. Client Portal
+   - Client-facing dashboard
+   - Design approval workflow
+   - Change request management
+   - Payment tracking
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND TECHNOLOGY STACK
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT STACK
+────────────────────────────────────────────────────────────────────────────────
+Framework:      Streamlit 1.32+
+Visualization:  Matplotlib 3.8+
+Data:           Pandas 2.1+, NumPy 1.26+
+Styling:        Custom CSS (inline)
+
+
+RECOMMENDED STACK (Future)
+────────────────────────────────────────────────────────────────────────────────
+
+Core Framework:
+  - Streamlit (current)
+  OR
+  - React + FastAPI (for more control)
+  - Next.js + FastAPI (for SSR)
+
+Visualization:
+  - Matplotlib (static floor plans)
+  - Plotly (interactive charts)
+  - Three.js (3D visualization)
+  - D3.js (custom visualizations)
+
+UI Components:
+  - Streamlit components (current)
+  OR
+  - Material-UI (React)
+  - Ant Design (React)
+  - Chakra UI (React)
+
+State Management:
+  - Streamlit session_state (current)
+  OR
+  - Redux (React)
+  - Zustand (React)
+  - Pinia (Vue)
+
+Styling:
+  - Custom CSS (current)
+  OR
+  - Tailwind CSS
+  - Styled Components
+  - CSS Modules
+
+Data Fetching:
+  - Direct Python calls (current)
+  OR
+  - REST API (FastAPI)
+  - GraphQL (Strawberry)
+  - WebSockets (real-time)
+
+Testing:
+  - Pytest (backend)
+  - Streamlit testing (frontend)
+  OR
+  - Jest (React)
+  - Cypress (E2E)
+  - Playwright (E2E)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND DEPLOYMENT OPTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+OPTION 1: Streamlit Cloud (Easiest)
+────────────────────────────────────────────────────────────────────────────────
+Platform:   Streamlit Cloud (free tier available)
+Setup:      Connect GitHub repo → Deploy
+Pros:       Zero configuration, automatic updates, free SSL
+Cons:       Limited resources, Streamlit-only
+URL:        https://share.streamlit.io/
+
+
+OPTION 2: Heroku (Simple)
+────────────────────────────────────────────────────────────────────────────────
+Platform:   Heroku
+Setup:      Procfile + requirements.txt
+Pros:       Easy deployment, add-ons available
+Cons:       Paid plans required for production
+Command:    heroku create && git push heroku main
+
+
+OPTION 3: Docker + Cloud Run (Scalable)
+────────────────────────────────────────────────────────────────────────────────
+Platform:   Google Cloud Run / AWS ECS / Azure Container Instances
+Setup:      Dockerfile → Container Registry → Deploy
+Pros:       Scalable, pay-per-use, full control
+Cons:       More complex setup
+Example:    gcloud run deploy --image gcr.io/project/app
+
+
+OPTION 4: VPS (Full Control)
+────────────────────────────────────────────────────────────────────────────────
+Platform:   DigitalOcean / Linode / AWS EC2
+Setup:      Nginx + Gunicorn + Streamlit
+Pros:       Full control, custom domain, SSH access
+Cons:       Manual server management
+Stack:      Ubuntu + Nginx + Supervisor + Streamlit
+
+
+OPTION 5: Serverless (Cost-effective)
+────────────────────────────────────────────────────────────────────────────────
+Platform:   AWS Lambda + API Gateway
+Setup:      Zappa / Serverless Framework
+Pros:       Pay-per-request, auto-scaling
+Cons:       Cold start latency, limited execution time
+Note:       Better for API backend, not ideal for Streamlit
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND PERFORMANCE OPTIMIZATION
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Caching Strategy
+────────────────────────────────────────────────────────────────────────────────
+@st.cache_data                          # Cache data loading
+@st.cache_resource                      # Cache expensive objects
+st.experimental_memo                    # Memoize function results
+st.experimental_singleton               # Singleton pattern
+
+Example:
+  @st.cache_data(ttl=3600)
+  def load_climate_data():
+      return pd.read_csv("climate.csv")
+
+
+2. Lazy Loading
+────────────────────────────────────────────────────────────────────────────────
+- Load heavy modules only when needed
+- Defer agent initialization
+- Progressive image loading
+- Pagination for large datasets
+
+
+3. Code Splitting
+────────────────────────────────────────────────────────────────────────────────
+- Separate pages for different features
+- Dynamic imports
+- Conditional rendering
+- Modular components
+
+
+4. Asset Optimization
+────────────────────────────────────────────────────────────────────────────────
+- Compress images (PNG → WebP)
+- Minify CSS/JS
+- Use CDN for static assets
+- Lazy load images
+
+
+5. Database Optimization
+────────────────────────────────────────────────────────────────────────────────
+- Index frequently queried fields
+- Use connection pooling
+- Cache query results
+- Batch operations
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND DEVELOPMENT WORKFLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT WORKFLOW
+────────────────────────────────────────────────────────────────────────────────
+1. Edit app.py or renderer.py
+2. Run: streamlit run app.py
+3. Browser auto-refreshes on file save
+4. Test manually in browser
+5. Commit changes
+
+
+RECOMMENDED WORKFLOW (Professional)
+────────────────────────────────────────────────────────────────────────────────
+
+1. DEVELOPMENT ENVIRONMENT
+   ├── Python virtual environment
+   ├── Git version control
+   ├── VS Code / PyCharm
+   ├── Pre-commit hooks (black, flake8, mypy)
+   └── .env file for secrets
+
+2. LOCAL DEVELOPMENT
+   ├── streamlit run app.py --server.runOnSave true
+   ├── Hot reload enabled
+   ├── Debug mode on
+   └── Local database (SQLite)
+
+3. TESTING
+   ├── Unit tests (pytest)
+   ├── Integration tests
+   ├── UI tests (Streamlit testing)
+   └── Manual QA checklist
+
+4. CODE REVIEW
+   ├── Create feature branch
+   ├── Push to GitHub
+   ├── Open pull request
+   ├── Automated CI checks
+   └── Peer review
+
+5. STAGING DEPLOYMENT
+   ├── Merge to staging branch
+   ├── Auto-deploy to staging server
+   ├── Smoke tests
+   └── Client review
+
+6. PRODUCTION DEPLOYMENT
+   ├── Merge to main branch
+   ├── Tag release version
+   ├── Auto-deploy to production
+   ├── Monitor logs & metrics
+   └── Rollback plan ready
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND BEST PRACTICES
+═══════════════════════════════════════════════════════════════════════════════
+
+1. CODE ORGANIZATION
+────────────────────────────────────────────────────────────────────────────────
+✅ Separate concerns (UI, logic, data)
+✅ Use components for reusable UI
+✅ Keep functions small and focused
+✅ Use type hints (Python 3.10+)
+✅ Document complex logic
+✅ Follow PEP 8 style guide
+
+Example:
+  def render_score_card(
+      title: str,
+      score: float,
+      max_score: float = 100,
+      color: str = "green"
+  ) -> None:
+      """Render a metric score card."""
+      ...
+
+
+2. STATE MANAGEMENT
+────────────────────────────────────────────────────────────────────────────────
+✅ Use session_state for persistence
+✅ Initialize state at app start
+✅ Avoid global variables
+✅ Clear state when needed
+✅ Use callbacks for updates
+
+Example:
+  if "floor_plan" not in st.session_state:
+      st.session_state.floor_plan = None
+
+
+3. ERROR HANDLING
+────────────────────────────────────────────────────────────────────────────────
+✅ Validate user inputs
+✅ Show helpful error messages
+✅ Graceful degradation
+✅ Log errors for debugging
+✅ Provide fallback options
+
+Example:
+  try:
+      fp = generate_floor_plan(...)
+  except ValueError as e:
+      st.error(f"Invalid input: {e}")
+      st.info("Try adjusting plot dimensions")
+
+
+4. PERFORMANCE
+────────────────────────────────────────────────────────────────────────────────
+✅ Cache expensive operations
+✅ Lazy load heavy modules
+✅ Optimize image sizes
+✅ Minimize re-renders
+✅ Use progress indicators
+
+Example:
+  with st.spinner("Generating floor plan..."):
+      fp = generate_floor_plan(...)
+
+
+5. ACCESSIBILITY
+────────────────────────────────────────────────────────────────────────────────
+✅ Use semantic HTML
+✅ Provide alt text for images
+✅ Ensure keyboard navigation
+✅ Use sufficient color contrast
+✅ Support screen readers
+
+Example:
+  st.image(img, caption="Floor plan", use_column_width=True)
+
+
+6. SECURITY
+────────────────────────────────────────────────────────────────────────────────
+✅ Validate all inputs
+✅ Sanitize user data
+✅ Use environment variables for secrets
+✅ Implement rate limiting
+✅ Keep dependencies updated
+
+Example:
+  import os
+  API_KEY = os.getenv("API_KEY")
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND TESTING STRATEGY
+═══════════════════════════════════════════════════════════════════════════════
+
+1. UNIT TESTS (pytest)
+────────────────────────────────────────────────────────────────────────────────
+Test individual functions in isolation
+
+Example:
+  def test_render_score_card():
+      # Test score card rendering
+      result = render_score_card("Test", 85)
+      assert result is not None
+
+
+2. INTEGRATION TESTS
+────────────────────────────────────────────────────────────────────────────────
+Test component interactions
+
+Example:
+  def test_floor_plan_generation():
+      # Test full generation pipeline
+      fp = generate_best_floor_plan(12, 15, "2BHK", ...)
+      assert fp is not None
+      assert len(fp.rooms) > 0
+
+
+3. UI TESTS (Streamlit AppTest)
+────────────────────────────────────────────────────────────────────────────────
+Test Streamlit app behavior
+
+Example:
+  from streamlit.testing.v1 import AppTest
+  
+  def test_app():
+      at = AppTest.from_file("app.py")
+      at.run()
+      assert not at.exception
+
+
+4. VISUAL REGRESSION TESTS
+────────────────────────────────────────────────────────────────────────────────
+Compare rendered outputs
+
+Example:
+  def test_floor_plan_rendering():
+      fig = render_floorplan(fp)
+      # Compare with baseline image
+      assert images_match(fig, "baseline.png")
+
+
+5. PERFORMANCE TESTS
+────────────────────────────────────────────────────────────────────────────────
+Measure execution time
+
+Example:
+  def test_generation_speed():
+      start = time.time()
+      fp = generate_floor_plan(...)
+      duration = time.time() - start
+      assert duration < 5.0  # Must complete in 5s
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND DOCUMENTATION
+═══════════════════════════════════════════════════════════════════════════════
+
+1. CODE DOCUMENTATION
+────────────────────────────────────────────────────────────────────────────────
+- Docstrings for all functions
+- Type hints for parameters
+- Usage examples in docstrings
+- Inline comments for complex logic
+
+Example:
+  def render_floor_plan(
+      fp: FloorPlan,
+      show_grid: bool = True,
+      show_compass: bool = True
+  ) -> matplotlib.figure.Figure:
+      """
+      Render a floor plan as a Matplotlib figure.
+      
+      Args:
+          fp: FloorPlan object to render
+          show_grid: Whether to show 1m grid overlay
+          show_compass: Whether to show north arrow
+          
+      Returns:
+          Matplotlib figure object
+          
+      Example:
+          >>> fp = generate_floor_plan(12, 15, "2BHK")
+          >>> fig = render_floor_plan(fp)
+          >>> st.pyplot(fig)
+      """
+      ...
+
+
+2. USER DOCUMENTATION
+────────────────────────────────────────────────────────────────────────────────
+- README.md with quick start
+- User guide with screenshots
+- FAQ section
+- Video tutorials
+- API documentation
+
+
+3. DEVELOPER DOCUMENTATION
+────────────────────────────────────────────────────────────────────────────────
+- Architecture overview
+- Component documentation
+- API reference
+- Contributing guide
+- Changelog
+
+
+═══════════════════════════════════════════════════════════════════════════════
+MIGRATION PATH: STREAMLIT → REACT (Optional)
+═══════════════════════════════════════════════════════════════════════════════
+
+If you need more control and scalability, consider migrating to React:
+
+PHASE 1: Backend API
+────────────────────────────────────────────────────────────────────────────────
+1. Create FastAPI backend
+2. Expose floor plan generation as REST API
+3. Keep Streamlit as frontend (hybrid approach)
+4. Test API endpoints
+
+PHASE 2: React Frontend
+────────────────────────────────────────────────────────────────────────────────
+1. Set up React project (Create React App / Next.js)
+2. Implement UI components
+3. Connect to FastAPI backend
+4. Migrate page by page
+
+PHASE 3: Advanced Features
+────────────────────────────────────────────────────────────────────────────────
+1. Add 3D visualization (Three.js)
+2. Implement real-time collaboration
+3. Add authentication & authorization
+4. Deploy as separate services
+
+Benefits:
+  ✅ More control over UI/UX
+  ✅ Better performance
+  ✅ Easier to scale
+  ✅ Mobile app possible (React Native)
+
+Drawbacks:
+  ❌ More complex development
+  ❌ Longer development time
+  ❌ Requires frontend expertise
+  ❌ More infrastructure to manage
+
+
+═══════════════════════════════════════════════════════════════════════════════
+RECENT ENHANCEMENTS (v4 Updates)
+═══════════════════════════════════════════════════════════════════════════════
+
+RENDERER.PY IMPROVEMENTS
+────────────────────────────────────────────────────────────────────────────────
+
+1. ARCHWAY SUPPORT (NEW)
+   ✅ Added _assign_archways() function
+   ✅ Detects open passages between rooms
+   ✅ Renders archways as open wall gaps
+   ✅ Distinguishes from doors (no swing arc)
+   ✅ Improves circulation flow visualization
+
+2. KITCHEN FIXTURE ENHANCEMENT
+   ✅ Door-aware counter placement
+   ✅ Keeps circulation path clear (≥0.9m)
+   ✅ Adaptive L-counter positioning based on door location
+   ✅ Prevents counter blocking entry/exit
+   ✅ Maintains wet-wall plumbing efficiency
+
+3. LEGEND SYSTEM EXPANSION
+   ✅ Added _legend() function for symbol reference
+   ✅ Added _legend_margin() for setback visualization
+   ✅ Shows TNCDBR setback zones
+   ✅ Displays margin annotations
+   ✅ Improves regulatory compliance clarity
+
+4. WALL SYSTEM REFINEMENT
+   ✅ Enhanced _compute_wall_segments() for complex geometries
+   ✅ Improved T-junction handling via _merge_intervals()
+   ✅ Better tolerance handling (tol=0.05m)
+   ✅ Proper exterior vs interior wall distinction
+   ✅ Corridor/lightwell wall thickness optimization
+
+5. OPENING ASSIGNMENT LOGIC
+   ✅ Conflict resolution for overlapping openings
+   ✅ Priority: doors > windows
+   ✅ Minimum spacing enforcement (0.05m)
+   ✅ Room-centric positioning
+   ✅ Prevents opening overlap
+
+6. ARCHITECTURAL DRAWING STANDARDS
+   ✅ Professional wall-centric rendering
+   ✅ Proper door swing conventions (hinge + arc)
+   ✅ Standard window symbols (3-line in gap)
+   ✅ Architectural column placement
+   ✅ Section cut line (A-A) for elevation reference
+
+ENGINE.PY ENHANCEMENTS
+────────────────────────────────────────────────────────────────────────────────
+
+1. AGENT INTEGRATION
+   ✅ _extract_agent_directives() for agent output parsing
+   ✅ Setback recommendations from regulatory agent
+   ✅ Room area targets from arch agent
+   ✅ Window placement rules from climate agent
+   ✅ Vastu placement preferences from vastu agent
+   ✅ Courtyard recommendations from baker agent
+
+2. ORIENTATION SYSTEM
+   ✅ Facing-aware room rotation
+   ✅ _rotate_rooms() for all 8 cardinal directions
+   ✅ Proper plot dimension swapping for 90°/270° rotations
+   ✅ Entry zone always on facing side
+   ✅ Canonical coordinate system with transformation
+
+3. KITCHEN-DIAGONAL PRINCIPLE
+   ✅ Kitchen always at SE canonical corner (Agni zone)
+   ✅ Dining directly below kitchen (required adjacency)
+   ✅ Bedrooms diagonal to kitchen (no adjacency)
+   ✅ Bathrooms below bedrooms (en-suite pattern)
+   ✅ Utility below kitchen (wet-wall plumbing)
+   ✅ Zero bedroom-kitchen adjacency across all templates
+
+4. ADJACENCY VALIDATION
+   ✅ _compute_adjacency() for room relationships
+   ✅ _check_adjacency_violations() for rule enforcement
+   ✅ Required adjacencies: dining-kitchen, bedroom-bathroom
+   ✅ Forbidden adjacencies: bathroom-kitchen, toilet-dining, etc.
+   ✅ NBC 2016 Part 8 compliance checks
+   ✅ Deduplication via frozenset pairs
+
+5. SCORING SYSTEM (6 METRICS)
+   ✅ Space Efficiency (room area utilization)
+   ✅ Aspect Ratio Quality (room proportions)
+   ✅ Natural Ventilation (cross-ventilation potential)
+   ✅ Climate Responsiveness (passive design alignment)
+   ✅ Baker Compliance (sustainable principles)
+   ✅ NBC Compliance (building code adherence)
+   ✅ Circulation Quality (movement efficiency)
+
+6. WINDOW ASSIGNMENT
+   ✅ _assign_windows_canonical() for initial placement
+   ✅ _assign_windows_final() for orientation-aware adjustment
+   ✅ Climate-driven window rules (prevailing wind alignment)
+   ✅ Vastu-aware placement (room direction preferences)
+   ✅ Jali screen recommendations for west/SW facing
+   ✅ Interior room ventilation via lightwells
+
+7. DOOR PLACEMENT
+   ✅ _assign_door_side() for intelligent door positioning
+   ✅ Interior door preference (corridor, living, dining)
+   ✅ Adjacency-aware placement
+   ✅ Minimum overlap enforcement (0.50m)
+   ✅ Tolerance-based matching (0.35m)
+
+8. BAKER FEATURES IDENTIFICATION
+   ✅ _identify_baker_features() for principle detection
+   ✅ Rat-trap bond detection (wall thickness ≥ 200mm)
+   ✅ Jali screen recommendations (W/SW facing)
+   ✅ Courtyard detection (plot > 100m²)
+   ✅ Deep overhang calculation (latitude-based)
+   ✅ Cross-ventilation verification
+   ✅ Local material recommendations
+
+9. EXPLANATION GENERATION
+   ✅ _generate_explanations() for XAI output
+   ✅ Room placement rationale
+   ✅ Window orientation justification
+   ✅ Climate strategy explanation
+   ✅ Baker principle application notes
+   ✅ Regulatory compliance notes
+   ✅ Vastu alignment explanation
+
+APP.PY ENHANCEMENTS
+────────────────────────────────────────────────────────────────────────────────
+
+1. AGENT PIPELINE INTEGRATION
+   ✅ 6-agent orchestration (Baker, Climate, Material, Regulatory, Vastu, Arch)
+   ✅ Agent report integration into floor plan generation
+   ✅ Status callback for user feedback
+   ✅ Agent output parsing and application
+   ✅ Integrated scoring from agent domains
+
+2. REPORT SECTIONS (8 SECTIONS)
+   ✅ Section 1: Design Summary (overall score + metrics)
+   ✅ Section 2: Site & Regulatory (TNCDBR, FSI, coverage)
+   ✅ Section 3: Room Schedule (NBC compliance table)
+   ✅ Section 4: Climate & Passive Design (ECBC, strategies)
+   ✅ Section 5: Baker Principles & Materials (recommendations)
+   ✅ Section 6: Vastu Analysis (room placement scoring)
+   ✅ Section 7: AI Reasoning (XAI decision trace)
+   ✅ Section 8: Agent Recommendations (domain insights)
+
+3. STYLING & THEMING
+   ✅ Custom CSS for all section types
+   ✅ Color-coded score cards (green/orange/red)
+   ✅ Themed boxes (baker, xai, nbc, vastu, setback, material)
+   ✅ Badge system for status indicators
+   ✅ Responsive layout
+   ✅ Parchment background aesthetic
+
+4. SESSION STATE MANAGEMENT
+   ✅ Floor plan persistence (st.session_state["fp"])
+   ✅ Variant tracking (st.session_state["all3"])
+   ✅ Agent report caching (st.session_state["agent_report"])
+   ✅ Prevents unnecessary regeneration
+   ✅ Enables quick tab switching
+
+5. EXPORT FUNCTIONALITY
+   ✅ PNG export with high DPI (150)
+   ✅ Proper filename generation (BHK_facing.png)
+   ✅ Download button in Floor Plan tab
+   ✅ BytesIO buffer for in-memory export
+   ✅ Parchment background preservation
+
+
+═══════════════════════════════════════════════════════════════════════════════
+RECENT CHANGES & UPDATES
+═══════════════════════════════════════════════════════════════════════════════
+
+NEW FILES ADDED
+────────────────────────────────────────────────────────────────────────────────
+✅ renderer.py                          # Visualization engine (enhanced v4)
+   - 40+ functions for architectural rendering
+   - Wall-centric drawing system
+   - Door/window/archway opening support
+   - Fixture placement (bathroom, kitchen, bedroom, study, living)
+   - Dimension annotations & labels
+   - Compass rose & scale bar
+   - Legend system with setback visualization
+   - Title block with project info
+   - Baker overlay indicators (rat-trap, jali, filler slab)
+   - XAI icons for explainability
+   - Level markers & section cut lines
+
+✅ decision_tree.py                     # Design decision mapping system
+   - Soil type → Foundation mapping (IS 1904:1986)
+   - Budget tier → Material strategy (COSTFORD 1986)
+   - Facing direction → Solar/overhang strategy (ECBC 2017)
+   - Occupancy → Exit width requirements (NBC 2016)
+   - Climate zone → Passive strategies
+   - Comprehensive design parameter derivation
+
+✅ project.txt                          # This documentation file
+
+✅ Multiple blueprint PNG files         # Sample floor plan outputs
+   - blueprint_1BHK.png
+   - blueprint_2BHK.png
+   - blueprint_3BHK.png (4 orientations: N, S, E, W)
+   - blueprint_4BHK.png
+   - blueprint_15x20.png
+   - blueprint_20x25.png
+   - blueprint_6x8.png
+   - blueprint_8x10.png
+
+✅ Door/window test outputs
+   - DOORS_2BHK_S.png
+   - DOORS_3BHK_N.png
+   - DOORS_TIGHT.png
+   - DOORS_ZOOM.png
+   - DOOR_GEOMETRY_TEST.png
+
+✅ Crop test outputs
+   - crop_floorplan.png
+   - crop_titleblock.png
+
+
+WORKFLOW DIRECTORIES
+────────────────────────────────────────────────────────────────────────────────
+✅ .zencoder/workflows/                 # Zencoder workflow definitions
+✅ .zenflow/workflows/                  # Zenflow workflow definitions
+✅ .claude/                             # Claude AI configuration
+   - launch.json                        # Launch configuration
+   - settings.local.json                # Local settings
+
+
+ENHANCED MODULES
+────────────────────────────────────────────────────────────────────────────────
+
+renderer.py (40+ functions)
+  ✅ Wall system: _compute_wall_segments, _merge_intervals, _assign_openings
+  ✅ Opening system: _draw_window_opening, _draw_door_opening, _draw_archway_opening
+  ✅ Fixture system: _fix_bathroom, _fix_kitchen, _fix_living, _fix_bedroom, _fix_study
+  ✅ Annotation system: _room_label, _draw_dimensions, _compass, _scale_bar, _legend
+  ✅ Baker overlays: _draw_rattrap_texture, _draw_jali_indicators, _draw_filler_slab_hatching
+  ✅ XAI support: _draw_xai_icons for explainability visualization
+  ✅ Advanced features: _draw_level_marker, _draw_title_header, _draw_columns
+
+engine.py (Enhanced)
+  ✅ Agent directive extraction: _extract_agent_directives
+  ✅ Room rotation system: _rotate_rooms for all 8 cardinal directions
+  ✅ Window assignment: _assign_windows_canonical, _assign_windows_final
+  ✅ Door placement: _assign_door_side with adjacency awareness
+  ✅ Adjacency validation: _compute_adjacency, _check_adjacency_violations
+  ✅ Scoring system: _compute_scores (7 metrics)
+  ✅ Baker features: _identify_baker_features
+  ✅ Explanations: _generate_explanations for XAI
+
+app.py (Enhanced)
+  ✅ Agent pipeline integration with 6 agents
+  ✅ 8-section comprehensive report
+  ✅ Session state management
+  ✅ PNG export functionality
+  ✅ Custom CSS styling
+
+decision_tree.py (NEW)
+  ✅ Soil foundation mapping (IS 1904:1986)
+  ✅ Budget material strategy (COSTFORD 1986)
+  ✅ Solar orientation strategy (ECBC 2017)
+  ✅ Exit width requirements (NBC 2016)
+  ✅ Passive design strategies by climate zone
+  ✅ Comprehensive design parameter derivation
+
+
+═══════════════════════════════════════════════════════════════════════════════
+CONCLUSION
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT STATE (Production-Ready v4)
+────────────────────────────────────────────────────────────────────────────────
+✅ Fully functional Streamlit app with agent integration
+✅ Advanced floor plan generation with orientation awareness
+✅ Comprehensive 8-section report with XAI explanations
+✅ Professional architectural rendering with archways & legends
+✅ Research-backed data modules (NBC, TNCDBR, climate, Vastu)
+✅ Multi-objective scoring system (7 metrics)
+✅ Kitchen-diagonal principle for zero bedroom-kitchen adjacency
+✅ Ready for production deployment
+✅ Complete documentation in project.txt
+✅ Sample outputs and test cases generated
+
+NEXT STEPS (Recommended Priority)
+────────────────────────────────────────────────────────────────────────────────
+1. Deploy to Streamlit Cloud (easiest)
+2. Add design library (save/load)
+3. Implement PDF export
+4. Add cost estimation
+5. Create user documentation
+
+LONG-TERM VISION
+────────────────────────────────────────────────────────────────────────────────
+- Multi-page Streamlit app with advanced features
+- 3D visualization & walkthrough
+- BIM integration (Revit, IFC)
+- Energy simulation (ECBC compliance)
+- Client portal & collaboration tools
+- Mobile app (optional: React Native)
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF DOCUMENT
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(py -c \"print\\(''ok''\\)\")",
+      "Bash(py -c \":*)",
+      "Bash(timeout 5)",
+      "Bash(py -m streamlit run app.py --server.port 8501 --server.headless true)",
+      "Bash(py -W ignore -c \":*)",
+      "Bash(py -c \"import matplotlib; print\\(matplotlib.__version__\\)\")",
+      "Bash(Remove-Item blueprint_*.png,verify_*.png,PROFESSIONAL_1BHK.png,PROFESSIONAL_4BHK.png -ErrorAction SilentlyContinue)",
+      "Bash(cmd /c \"del /Q blueprint_*.png verify_*.png PROFESSIONAL_1BHK.png PROFESSIONAL_4BHK.png 2>nul\")",
+      "Bash(cmd /c \"del /Q DOORS_*.png DOOR_GEOMETRY_TEST.png 2>nul\")",
+      "Bash(cmd /c \"del /Q OPENING_GEOMETRY.png OPENINGS_FULL.png PROFESSIONAL_3BHK.png 2>nul\")",
+      "Bash(py -c \"from engine import TN_CLIMATE_ZONES; print\\(list\\(TN_CLIMATE_ZONES.keys\\(\\)\\)\\)\")",
+      "Bash(py -c \"import shapely; print\\(shapely.__version__\\)\")"
+    ]
+  }
+}

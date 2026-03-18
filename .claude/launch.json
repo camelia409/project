@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "TN Floor Plan AI",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "-m",
+        "streamlit",
+        "run",
+        "app.py"
+      ],
+      "port": 8501
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+# Project Summary: Professional Agent-Integrated Architectural Floor Plan System (v5)
+
+## 1. Objective and Overview
+This project is an advanced, AI-driven architectural floor plan generation and rendering system tailored for the Tamil Nadu (TN) region. It autonomously generates, evaluates, and renders highly realistic, professional-grade floor plans (1BHK to 4BHK) based on plot dimensions, cardinal facing, climate zone, and specific user/agent requirements. 
+
+The core philosophy of the system integrates modern computational geometry with traditional architectural principles, ensuring that generated floor plans are not just mathematically possible, but practically livable, regulatory-compliant, and environmentally responsive.
+
+## 2. Core Architecture & Modules
+- **`engine.py` (The Generator Engine)**: The central hub that orchestrates layout generation. It integrates data from various agents, normalizes grid layouts, enforces architectural constraints, applies TN setbacks, checks minimum dimensions, handles cardinal rotations (ensuring entry/living always faces the road), and places doors/windows dynamically based on wind patterns and light availability.
+- **`renderer.py` (The Wall-Centric Renderer)**: Produces professional blueprints. It moved away from simple color-filled blocks to a sophisticated "wall-centric" pipeline. It computes contiguous wall segments (differentiating 230mm exterior from 120mm interior walls), cleanly trims T-junctions, and draws high-quality architectural symbols (solid door arcs, 3-line window gaps, detailed realistic furniture at 75-85% scale).
+- **`algorithms/adjacency_solver.py`**: A complex graph-to-layout solver. It translates functional flow chains (Public -> Private -> Service), Vastu principles, and Space Syntax Theory into spatial grid templates. It dynamically handles narrow, square, wide, and courtyard-centric topologies.
+- **`algorithms/scoring.py`**: Evaluates layouts across multiple axes: Space Efficiency, Aspect Ratio, Natural Ventilation, Climate Responsiveness, Baker Principles Compliance, NBC Compliance, and Circulation Quality.
+
+## 3. Regulatory & Typological Frameworks
+The layout generation is strictly bound by several professional standards:
+- **NBC 2016 (National Building Code of India)**: Enforces minimum room dimensions, mandatory corridors for 2+ bedrooms, hygiene separations (e.g., toilets cannot open into kitchens or dining areas), and lightwell insertion for landlocked interior rooms.
+- **TNCDBR 2019 (Tamil Nadu Combined Development and Building Rules)**: Calculates the maximum permissible ground coverage and imposes scalable front, rear, and side setbacks based on plot area.
+- **Vastu Shastra**: Orientations are culturally optimized. The Kitchen is anchored to the Agni corner (South-East). Placement of Pooja rooms, Bedrooms, and main entrances shift intelligently under the hood to maximize Vastu scores without compromising flow.
+- **Laurie Baker Principles**: Environmentally sustainable logic dynamically proposes rat-trap bonds, jali screens (for West-facing heat reduction), deep overhangs, lightwells, and central courtyards (Muttram) based on plot constraints.
+
+## 4. Climate-Responsive Design (TN Climate Zones)
+The engine adapts drastically to four mapped TN climates:
+- **Coastal (Hot & Humid)**: Prioritizes SE wind inlets, cross-ventilation, and Jali screens.
+- **Inland Semi-Arid (Hot & Dry)**: Prioritizes thermal mass, minimal solar heat-gain windows, and courtyard evaporative cooling.
+- **Western Ghats (Wet)**: Adjusts for heavy monsoons, providing large verandahs and transition zones.
+- **Hilly (Temperate/Cool)**: Emphasizes solar heat gain and compact layouts to prevent heat loss.
+
+## 5. Agent Integration (AI-Driven Directives)
+The pipeline is designed to interface with dedicated specialized AI Agents:
+- **Regulatory Agent**: Overrides and governs setback rules and coverage limits.
+- **Architectural Agent**: Specifies ideal spatial programming (e.g., desired area in Sq. Meters per room). The engine mathematically nudges the grid column/row ratios to hit these targets natively.
+- **Climate & Baker Agents**: Suggest window directions, courtyard inclusions, and passive cooling strategies.
+- **Vastu Agent**: Weighs in on specific room-cardinal pairings.
+
+## 6. Recent Major Upgrades (v5)
+1. **Wall-centric Computing**: Replaced simple colored boxes with actual wall-mass intersection logic. Furniture is drawn beneath walls to create real spatial voids.
+2. **Realistic Furniture Pipeline**: Scaled fixtures (75-85% of room width). Added 4-burner hobs, oval bowls, TV units, rugs, and side tables that intelligently dodge door swings and circulation paths.
+3. **Target-Based Column Spans**: Abandoned equidistant grid splitting. The solver now uses `TARGET_COL_W` (e.g., Bedrooms = 3.2m, Service = 3.0m) to yield the irregular, authentic geometries seen in professional drafting.
+4. **Circulation Flow Protection**: Kitchen L-counters and furniture clusters dynamically flip to ensure doors always have clear ≥0.9m circulation pathways upon entering the room.

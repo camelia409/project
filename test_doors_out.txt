@@ -1,0 +1,16 @@
+﻿Name           type       door  adj
+------------------------------------------------------------
+  Verandah     verandah   S     Living, Kitchen
+  Living       living     W     Verandah, Bedroom, Bedroom 2
+  Kitchen      kitchen    E     Verandah, Dining
+  Bedroom      bedroom    W     Living, Bedroom 2, Bathroom
+  Bedroom 2    bedroom    N     Living, Bedroom, Bathroom 2
+  Dining       dining     E     Kitchen, Utility, Light Well
+  Bathroom     bathroom   W     Bedroom, Bathroom 2, Bedroom 3
+  Bathroom 2   bathroom   N     Bedroom 2, Bathroom, Bathroom 3
+  Utility      utility    E     Dining, Corridor, Light Well
+  Bedroom 3    bedroom    N     Bathroom, Bathroom 3
+  Bathroom 3   bathroom   N     Bathroom 2, Bedroom 3, Corridor
+  Corridor     corridor   N     Utility, Bathroom 3
+
+Saved test_doors.png
