@@ -112,12 +112,35 @@ Custom exception hierarchy:
 - Full pipeline: constraint.py → BuildZone → vastu_router.py → RoomAnchorMap verified
 - Error cases: FloorLevelNotPermitted, PlotTooSmall, SetbackExceeds, VastuZoneUnavailable all verified
 
+## Phase 2 Additions (2025-Feb)
+
+### 4. backend/engine/allocator.py (Created 2025-Feb)
+- **`BHKType`** enum: ONE_BHK / TWO_BHK / THREE_BHK / VILLA
+- **`BHK_ROOM_SETS`** — canonical room lists per flat type
+- **`NBC_WEIGHTS`** — NBC 2016 minimum areas used as subdivision weights
+- **`_proportional_bisect(cell, rooms)`** — recursive equal-fraction bisection along longer axis; sorts rooms by NBC weight descending (most important room gets bottom/left)
+- **`resolve_spatial_conflicts(bhk_type, room_anchors, build_envelope)`** — public API:
+  BHK filtering → group by zone → single: full cell, multiple: proportional split → envelope containment check → AllocatedRoomMap
+- **`describe_allocations()`** — debug helper
+
+### 5. backend/engine/geometry.py (Created 2025-Feb)
+- Constants: `EXT_WALL_T=0.230m`, `INT_WALL_T=0.115m`, `INT_WALL_HALF=0.0575m`
+- **`NBC_CARPET_MINIMUMS`** — clear carpet area minimums (Kitchen 5.0m², MasterBedroom 9.5m², etc.)
+- **`_classify_wall_thicknesses(base_poly, envelope)`** — edge-on-boundary detection with 0.1mm tolerance; returns (left_t, right_t, bottom_t, top_t)
+- **`_inset_rectangle(room, base_poly, envelope)`** — computes clear box via direct arithmetic; clips to envelope
+- **`apply_wall_thickness(allocated_rooms, build_envelope)`** — main API; raises SpaceDeficitError for NBC violations
+- **`get_wall_schedule()`** — per-face wall type/thickness report
+- **`describe_floor_plan()`** — formatted text summary
+
+### 6. backend/engine/exceptions.py additions (2025-Feb)
+- **`AllocationError`** — raised when zone cell too small for assigned rooms
+- **`SpaceDeficitError`** — raised when clear carpet area < NBC 2016 minimum
+
 ## Prioritised Backlog
 
 ### P0 (Next Session)
-- [ ] allocator.py — Resolve zone conflicts when multiple rooms share a cell
-- [ ] geometry.py — Wall-centric polygon subdivision within each zone cell
 - [ ] FastAPI routes: POST /api/validate-plot, POST /api/generate-layout
+- [ ] SVG renderer (render/svg_builder.py) — visualise BuildZone + room polygons
 
 ### P1
 - [ ] svg_builder.py — Render BuildZone + room anchors to SVG
