@@ -428,6 +428,124 @@ def resolve_spatial_conflicts(
     return allocated
 
 
+# ── Fallback Downgrade Mechanism ──────────────────────────────────────────────
+#
+# Rooms listed here are "optional" in the sense that removing them allows
+# a tighter plan to remain NBC-compliant.  They are ranked by dispensability:
+# the FIRST entry is removed first if a SpaceDeficitError occurs.
+#
+# Design decision:
+#   Mandatory structural/habitable rooms (MasterBedroom, Kitchen, Hall,
+#   Toilet, Bedroom2/3) are NEVER in this list — their removal would
+#   invalidate the BHK classification.
+#
+OPTIONAL_ROOMS_RANKED: list[str] = [
+    "StoreRoom",  # utility only — no NBC minimum floor classification
+    "Pooja",      # religious — critical but plan is still habitable without it
+    "Entrance",   # foyer — can be absorbed into Hall in compact plans
+    "Dining",     # can share open space with Hall in studio-style plans
+]
+
+
+def resolve_with_geometry_fallback(
+    bhk_type:       str,
+    room_anchors:   RoomAnchorMap,
+    build_envelope: Polygon,
+) -> tuple[AllocatedRoomMap, list[str], dict]:
+    """
+    Allocation + geometry pass with progressive optional-room downgrade.
+
+    Motivation:
+    ────────────
+    On tighter plots (e.g., 3BHK_VILLA on a 12×20m site) the full BHK room
+    set may cause ``SpaceDeficitError`` for optional rooms like StoreRoom, which
+    receive a tiny proportional slice of the W zone cell after Bedroom2 and
+    Dining take their shares.  Failing the entire pipeline for a utility room
+    is undesirable — the engine should silently downgrade to a viable subset.
+
+    Algorithm — Progressive Fallback:
+    ──────────────────────────────────
+    1. Attempt full allocation (resolve_spatial_conflicts) + wall-thickness
+       pass (apply_wall_thickness) with all rooms.
+    2. If ``SpaceDeficitError`` is raised:
+         a. Check if the failing room is in OPTIONAL_ROOMS_RANKED.
+         b. If YES → record it as "dropped", remove from working anchors,
+            retry from Step 1.
+         c. If NO  → the room is mandatory; re-raise immediately.
+    3. Repeat until either all passes succeed, or no more optional rooms
+       remain to drop.
+    4. If the loop exhausts all optional rooms and geometry still fails,
+       re-raise the final SpaceDeficitError (plot is genuinely too small).
+
+    Rooms silently dropped are returned in the second element of the tuple,
+    allowing the API layer to inform the client which rooms were omitted.
+
+    Args:
+        bhk_type:       BHK type string ('1BHK', '2BHK', '3BHK', '3BHK_VILLA').
+        room_anchors:   RoomAnchorMap from vastu_router.get_room_anchors().
+        build_envelope: Build envelope Shapely Polygon.
+
+    Returns:
+        (allocated_rooms, dropped_rooms, floor_plan)
+          - allocated_rooms : AllocatedRoomMap — base polygons without dropped rooms.
+          - dropped_rooms   : list[str]        — rooms removed during fallback.
+          - floor_plan      : FloorPlanMap     — clear polygons + carpet areas.
+
+    Raises:
+        ValueError:        Unknown bhk_type or empty room_anchors.
+        AllocationError:   Zone cell too small for required (mandatory) rooms.
+        SpaceDeficitError: Even after removing all optional rooms, a mandatory
+                           room still fails NBC area requirements.
+    """
+    # Local import avoids a top-level circular dependency:
+    # allocator → geometry → exceptions (no cycle; allocator already → exceptions)
+    from backend.engine.geometry import apply_wall_thickness
+    from backend.engine.exceptions import SpaceDeficitError
+
+    current_anchors: RoomAnchorMap = dict(room_anchors)   # mutable working copy
+    dropped:         list[str]     = []
+    last_exc:        Exception | None = None
+
+    # Maximum iterations = one per optional room + 1 clean-run attempt
+    for _attempt in range(len(OPTIONAL_ROOMS_RANKED) + 2):
+        try:
+            allocated  = resolve_spatial_conflicts(bhk_type, current_anchors, build_envelope)
+            floor_plan = apply_wall_thickness(allocated, build_envelope)
+            # Both passes succeeded — return result
+            return allocated, dropped, floor_plan
+
+        except SpaceDeficitError as exc:
+            last_exc = exc
+            failing_room: str = exc.context.get("room_type", "")
+
+            if failing_room in OPTIONAL_ROOMS_RANKED and failing_room not in dropped:
+                # Drop the optional room and retry
+                dropped.append(failing_room)
+                current_anchors = {
+                    k: v for k, v in current_anchors.items() if k != failing_room
+                }
+                # Continue to next attempt
+            else:
+                # Mandatory room is failing — cannot recover
+                raise SpaceDeficitError(
+                    f"Mandatory room '{failing_room}' cannot meet NBC 2016 minimums "
+                    f"on this plot even after dropping optional rooms {dropped}.  "
+                    f"Increase plot dimensions or reduce the BHK type.",
+                    room_type=failing_room,
+                    base_area_sqm=exc.context.get("base_area_sqm", 0.0),
+                    carpet_area_sqm=exc.context.get("carpet_area_sqm", 0.0),
+                    nbc_minimum_sqm=exc.context.get("nbc_minimum_sqm", 0.0),
+                    wall_overhead_sqm=exc.context.get("wall_overhead_sqm", 0.0),
+                    base_dims=exc.context.get("base_dims", "N/A"),
+                    clear_dims=exc.context.get("clear_dims", "N/A"),
+                ) from exc
+
+    # All optional rooms exhausted and still failing
+    if last_exc:
+        raise last_exc
+    raise RuntimeError("resolve_with_geometry_fallback: unexpected exit without result")
+
+
 def describe_allocations(allocated: AllocatedRoomMap, indent: int = 2) -> str:
     """
     Return a human-readable text report of an AllocatedRoomMap.
