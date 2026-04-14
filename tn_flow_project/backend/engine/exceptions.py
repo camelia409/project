@@ -214,3 +214,56 @@ class VastuZoneUnavailableError(VastuRoutingError):
       - cell_area    : float (actual available area in the zone)
       - required_min : float (NBC minimum for the room type)
     """
+
+
+# ── Allocator & Geometry Errors ───────────────────────────────────────────────
+
+class AllocationError(TNCDBRValidationError):
+    """
+    Raised by the Spatial Allocator (allocator.py) when it cannot divide a
+    Vastu zone cell into viable sub-polygons for all assigned rooms.
+
+    This typically occurs when a zone cell is physically too small to host
+    all the rooms assigned to it by the Vastu Router, even before wall
+    thicknesses are applied.
+
+    Expected context keys:
+      - zone          : str  (e.g., 'W', 'SW')
+      - rooms_in_zone : list[str]
+      - cell_area_sqm : float
+      - required_sqm  : float (sum of NBC weights for rooms in zone)
+
+    Example:
+        "Cannot allocate 3 rooms [Bedroom2, Dining, StoreRoom] in the W zone
+         cell (12.0m²). Total NBC minimum = 15.0m². Increase plot size or
+         reduce BHK type."
+    """
+
+
+class SpaceDeficitError(TNCDBRValidationError):
+    """
+    Raised by the Geometry Engine (geometry.py) when applying wall thicknesses
+    to an allocated base polygon leaves a clear carpet area below the NBC 2016
+    minimum for the room type.
+
+    This is the final physical-space check in the pipeline.  If raised, the
+    floor plan is geometrically impossible given the plot dimensions and the
+    BHK type requested.
+
+    Expected context keys:
+      - room_type        : str   (e.g., 'MasterBedroom', 'Kitchen')
+      - base_area_sqm    : float (allocated polygon area before walls)
+      - carpet_area_sqm  : float (clear area after wall subtraction)
+      - nbc_minimum_sqm  : float (the NBC 2016 threshold)
+      - wall_overhead_sqm: float (area consumed by walls)
+      - base_dims        : str   (e.g., '3.00x3.51m')
+      - clear_dims       : str   (e.g., '2.71x3.22m')
+
+    Example:
+        "MasterBedroom clear carpet area 8.73m² is below the NBC 2016 minimum
+         of 9.5m². Base polygon 3.00×3.51m leaves only 2.71×3.22m after
+         applying 230mm external + 57.5mm internal wall thicknesses.
+         Use a plot ≥ 12×22m for CMDA G+1 to satisfy this constraint."
+
+    Typical HTTP mapping: 422 Unprocessable Entity.
+    """
