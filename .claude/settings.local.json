@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ':*)",
+      "Bash(python backend/database/seed_rules_vastu.py --drop --report)"
+    ]
+  }
+}

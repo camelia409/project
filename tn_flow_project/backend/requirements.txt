@@ -1,0 +1,25 @@
+# TN-Flow Backend Dependencies
+# Install with: pip install -r requirements.txt
+
+# --- Web API ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# --- Data Validation ---
+pydantic>=2.7.0
+
+# --- Database ---
+sqlalchemy>=2.0.30
+# Uncomment for PostgreSQL/PostGIS production deployment:
+# psycopg2-binary>=2.9.9
+
+# --- Geometry Engine ---
+shapely>=2.0.4
+numpy>=1.26.4
+
+# --- Rendering ---
+svgwrite>=1.4.3
+ezdxf>=1.3.4
+
+# --- Dev / Debug only (not for production) ---
+matplotlib>=3.9.0
